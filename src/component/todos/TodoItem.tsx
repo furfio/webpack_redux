@@ -1,38 +1,32 @@
 import React from 'react';
-import { useDispatch } from 'react-redux';
-import { toggleCompleteAsync, deleteTodoAsync, todoItem } from '../../redux/todoSlice';
-import { AppDispatch } from '../../redux/store';
+import { toggleCompleteAsync, deleteTodoAsync, ITodoItem } from '../../redux/todoSlice';
+import { useAppDispatch } from '../../redux/hooks';
 
-interface Props {
-    item: todoItem
-}
-
-const TodoItem: React.FC<Props> = (props) => {
-    const {item} = props
-    const dispatch = useDispatch<AppDispatch>();
+const TodoItem: React.FC<ITodoItem> = (props) => {
+    const { id, title, completed } = props
+    const dispatch = useAppDispatch()
+    console.log(`${title} is rendering..`)
 
     const handleCheckboxClick = () => {
-        console.log({id: item.id, title: item.title, completed: !item.completed})
-        dispatch(toggleCompleteAsync({id: item.id, title: item.title, completed: !item.completed}));
+        dispatch(toggleCompleteAsync({ id: id,  title: title, completed: !completed }));
     };
 
     const handleDeleteClick = () => {
-        dispatch(deleteTodoAsync(item));
+        dispatch(deleteTodoAsync(id));
     };
 
     return (
         <div>
-            <li className={`list-group-item ${item.completed && 'list-group-item-success'}`}>
+            <li className={`list-group-item ${completed && 'list-group-item-success'}`}>
                 <div className='d-flex justify-content-between'>
                     <span className='d-flex align-items-center'>
-                        {item.completed ?? '123123'}
                         <input
                             type='checkbox'
                             className='mr-3'
-                            checked={item.completed}
+                            checked={completed}
                             onChange={handleCheckboxClick}
                         ></input>
-                        {item.title}
+                        {title}
                     </span>
                     <button onClick={handleDeleteClick} className='btn btn-danger'>
                         Delete
@@ -43,4 +37,5 @@ const TodoItem: React.FC<Props> = (props) => {
     );
 };
 
-export default TodoItem;
+//prevent other todoItems from re-render when updating current todoItem
+export default React.memo(TodoItem);

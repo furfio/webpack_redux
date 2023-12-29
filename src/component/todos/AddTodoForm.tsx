@@ -1,20 +1,18 @@
 import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { addTodoAsync, todoItem } from '../../redux/todoSlice';
-import { AppDispatch } from '../../redux/store';
+import { addTodoAsync, deleteTodoAsync, ITodoItem, toggleCompleteAsync } from '../../redux/todoSlice';
+import { useAppDispatch } from '../../redux/hooks';
 
 const AddTodoForm = () => {
 	const [value, setValue] = useState('');
-	const dispatch = useDispatch<AppDispatch>();
+    const dispatch = useAppDispatch()
 
 	const onSubmit = (event: any) => {
 		event.preventDefault();
 		if (value) {
 			dispatch(
-				addTodoAsync({
-					title: value
-				} as todoItem)
+				addTodoAsync(value)
 			);
+			setValue('')
 		}
 	};
 
