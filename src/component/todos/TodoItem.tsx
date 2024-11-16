@@ -1,6 +1,6 @@
 import React from 'react';
-import { toggleCompleteAsync, deleteTodoAsync, ITodoItem } from '../../redux/todoSlice';
-import { useAppDispatch } from '../../redux/hooks';
+import { toggleCompleteAsync, deleteTodoAsync, ITodoItem } from './redux/todoSlice';
+import { useAppDispatch } from '../../rootstore/hooks';
 
 const TodoItem: React.FC<ITodoItem> = (props) => {
     const { id, title, completed } = props

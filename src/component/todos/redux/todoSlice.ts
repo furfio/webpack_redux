@@ -1,12 +1,26 @@
 import { PayloadAction, createAsyncThunk, createSelector, createSlice } from '@reduxjs/toolkit';
-import { nanoid } from 'nanoid';
-import { RootState } from './store';
-import { todo } from 'node:test';
+import { RootState } from '../../../rootstore/store';
 
 export interface ITodoItem {
     id: string,
     title: string,
     completed: boolean,
+}
+
+export interface ITodo {
+    entities: ITodoItem[],
+    status: Status
+}
+
+export enum Status {
+    pending = 'pending',
+    succeed = 'succeed',
+    failed = 'failed'
+}
+
+const initTodoState: ITodo = {
+    status: Status.pending,
+    entities: []
 }
 
 export const getTodosAsync = createAsyncThunk(
@@ -71,20 +85,36 @@ export const deleteTodoAsync = createAsyncThunk(
 
 export const todoSlice = createSlice({
     name: 'todos',
-    initialState: [] as ITodoItem[],
+    initialState: initTodoState,
     reducers: {},
     extraReducers: (builder) => {
-        builder.addCase(getTodosAsync.fulfilled, (state: ITodoItem[], action: PayloadAction<ITodoItem[]>) => {
-            return action.payload;
-        }).addCase(addTodoAsync.fulfilled, (state: ITodoItem[], action: PayloadAction<ITodoItem>) => {
-            state.push(action.payload);
-        }).addCase(toggleCompleteAsync.fulfilled, (state: ITodoItem[], action: PayloadAction<ITodoItem>) => {
-            const index = state.findIndex(
+        builder.addCase(getTodosAsync.fulfilled, (state: ITodo, action: PayloadAction<ITodoItem[]>) => {
+            state.status = Status.succeed;
+            state.entities = action.payload;
+        })
+        .addCase(addTodoAsync.pending, (state: ITodo, action: PayloadAction<ITodoItem[]>) => {
+            state.status = Status.pending;
+        })
+        .addCase(addTodoAsync.fulfilled, (state: ITodo, action: PayloadAction<ITodoItem>) => {
+            state.status = Status.succeed
+            state.entities.push(action.payload);
+        }).
+        addCase(toggleCompleteAsync.fulfilled, (state: ITodo, action: PayloadAction<ITodoItem>) => {
+            const index = state.entities.findIndex(
                 (todo: ITodoItem) => todo.id === action.payload.id
             );
-            state[index].completed = action.payload.completed;
-        }).addCase(deleteTodoAsync.fulfilled, (state: ITodoItem[], action: PayloadAction<string>) => {
-            return state.filter((todo: ITodoItem) => todo.id !== action.payload);
+            state.entities[index].completed = action.payload.completed;
+            state.status = Status.succeed;
+        }).
+        addCase(toggleCompleteAsync.pending, (state: ITodo, action: PayloadAction<ITodoItem>) => {
+            state.status = Status.pending;
+        })
+        .addCase(deleteTodoAsync.fulfilled, (state: ITodo, action: PayloadAction<string>) => {
+            state.entities = state.entities.filter((todo: ITodoItem) => todo.id !== action.payload);
+            state.status = Status.succeed;
+        })
+        .addCase(deleteTodoAsync.pending, (state: ITodo, action: PayloadAction<string>) => {
+            state.status = Status.pending;
         })
     },
 });
@@ -93,12 +123,12 @@ export const todoSlice = createSlice({
 
 //selectors
 export const selectTodos = (state: RootState) => state.todos
-export const completedTodosSelector = createSelector(selectTodos, (todos: ITodoItem[]) =>
-    todos.filter((todo) => todo.completed === true)
+export const completedTodosSelector = createSelector(selectTodos, (todos: ITodo) =>
+    todos.entities.filter((todo) => todo.completed === true)
 );
 export const selectTodoByIdSelector = createSelector(
     [selectTodos, (state, todoId) => todoId],
-    (todos: ITodoItem[], todoId) => todos.find((todo) => todo.id === todoId)
+    (todos: ITodo, todoId) => todos.entities.find((todo) => todo.id === todoId)
 );
 
 export default todoSlice.reducer;

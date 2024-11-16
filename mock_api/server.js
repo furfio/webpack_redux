@@ -11,6 +11,11 @@ const app = express();
 app.use(cors());
 app.use(json());
 
+// Middleware to add a 1-second delay to all requests
+app.use((req, res, next) => {
+	setTimeout(next, 2000);
+  });
+
 let todos = [
 	{
 		id: nanoid(),

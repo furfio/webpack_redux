@@ -1,5 +1,5 @@
 import React from 'react';
-import { completedTodosSelector } from '../../redux/todoSlice';
+import { completedTodosSelector } from './redux/todoSlice';
 import { useSelector } from 'react-redux';
 
 const TotalCompleteItems = () => {
